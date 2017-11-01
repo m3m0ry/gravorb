@@ -21,6 +21,7 @@ class Tank:
         self.turn = 0
         self.orientation = math.radians(90)
         self.image = pygame.transform.rotate(self._image, math.degrees(self.orientation))  # Image for representation
+        self.reload = 0
 
     def movement(self, direction):
         if direction == Direction.FORWARD:
@@ -37,7 +38,12 @@ class Tank:
         self.cannon.orientation = winkel
 
     def fire(self):
-        print('fire')
+        if self.reload <= 0:
+            self.reload = 30
+            return True
+        else:
+            print('reloading')
+            return False
 
     def tick(self, fps):
         if self.forward == 0 or (self.forward < 0 < self.velocity) or (self.forward > 0 > self.velocity):
@@ -55,6 +61,9 @@ class Tank:
 
         self.image = pygame.transform.rotate(self._image, math.degrees(self.orientation))
         self.cannon.tick(fps)
+
+        if self.reload > 0:
+            self.reload -= fps/100
 
     @property
     def image_position(self):

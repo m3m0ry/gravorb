@@ -9,9 +9,10 @@ class Handler:
 
 
 class MouseHandler(Handler):
-    def __init__(self, tank):
+    def __init__(self, tank, shots):
         self.mouse_key_settings = [Fire(tank), None, None]
         self.mouse_position_settings = Aim(tank)
+        self.shots = shots
 
     def handle(self):
         mouse_position = pygame.mouse.get_pos()
@@ -20,7 +21,7 @@ class MouseHandler(Handler):
         mouse_keys = pygame.mouse.get_pressed()
         for key, state in enumerate(mouse_keys):
             if state and self.mouse_key_settings[key] is not None:
-                self.mouse_key_settings[key]()
+                self.mouse_key_settings[key](self.shots)
 
 
 class KeyHandler(Handler):

@@ -56,6 +56,6 @@ class Fire(Action):
 
     def __call__(self, *args, **kwargs):
         # Check if tank can fire
-        self.tank.fire()
-        # Create and link new shot
-        shot = Shot(self.tank.position, self.tank.orientation)
+        if self.tank.fire():
+            # Create and link new shot
+            args[0].append(Shot(self.tank.position, self.tank.cannon.orientation))

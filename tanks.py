@@ -17,7 +17,8 @@ black = (0, 0, 0)
 players = [Tank((display_height / 2, display_width / 2), pygame.image.load('resources/tank2.png'),
                 pygame.image.load('resources/cannon1.png'))]
 player = players[0]
-handlers = [KeyHandler(player), MouseHandler(player)]
+shots = []
+handlers = [KeyHandler(player), MouseHandler(player, shots)]
 
 
 while True:
@@ -29,11 +30,15 @@ while True:
     for handler in handlers:
         handler.handle()
 
+    print(shots)
     screen.fill(white)
     for player in players:
         player.tick(fps)
         screen.blit(player.image, player.image_position)
         screen.blit(player.cannon.image, player.cannon.image_position)
+    for shot in shots:
+        shot.tick(fps)
+        screen.blit(shot.image, shot.image_position)
 
     pygame.display.update()
     clock.tick(fps)
