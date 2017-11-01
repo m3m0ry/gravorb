@@ -1,8 +1,7 @@
 import pygame
-from pygame.locals import *
 
-from tank import Tank, Direction
-from actions import Forward, Backward, Left, Right
+from tank import Tank
+from handler import MouseHandler, KeyHandler
 
 
 pygame.init()
@@ -15,10 +14,11 @@ fps = 60
 white = (255, 255, 255)
 black = (0, 0, 0)
 
-players = [Tank((display_height / 2, display_width / 2), pygame.image.load('resources/tank1.png'))]
+players = [Tank((display_height / 2, display_width / 2), pygame.image.load('resources/tank2.png'),
+                pygame.image.load('resources/cannon1.png'))]
 player = players[0]
-forward, backward, left, right = Forward(player), Backward(player), Left(player), Right(player)
-key_handlers = {K_UP: forward, K_w: forward, K_DOWN: backward, K_s: backward, K_LEFT: left, K_a: left, K_RIGHT: right, K_d: right}
+handlers = [KeyHandler(player), MouseHandler(player)]
+
 
 while True:
     for event in pygame.event.get():
@@ -26,16 +26,15 @@ while True:
             pygame.quit()
             quit()
 
-    # Handle pressed keys
-    keys = pygame.key.get_pressed()
-    for key, state in enumerate(keys):
-        if state and key in key_handlers:
-            key_handlers[key]()
+    for handler in handlers:
+        handler.handle()
 
     screen.fill(white)
     for player in players:
         player.tick(fps)
-        screen.blit(player.image, player.position)
+        screen.blit(player.image, player.image_position)
+        screen.blit(player.cannon.image, player.cannon.image_position)
+
     pygame.display.update()
     clock.tick(fps)
 

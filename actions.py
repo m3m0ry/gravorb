@@ -1,7 +1,8 @@
 from tank import Direction
+from shot import Shot
 
 
-class Action(object):
+class Action:
     def __init__(self, tank):
         self.tank = tank
 
@@ -39,3 +40,22 @@ class Right(Action):
 
     def __call__(self, *args, **kwargs):
         self.tank.movement(Direction.RIGHT)
+
+
+class Aim(Action):
+    def __init__(self, tank):
+        super().__init__(tank)
+
+    def __call__(self, *args, **kwargs):
+        self.tank.aim(*args)
+
+
+class Fire(Action):
+    def __init__(self, tank):
+        super().__init__(tank)
+
+    def __call__(self, *args, **kwargs):
+        # Check if tank can fire
+        self.tank.fire()
+        # Create and link new shot
+        shot = Shot(self.tank.position, self.tank.orientation)
