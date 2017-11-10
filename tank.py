@@ -2,6 +2,7 @@ import numpy as np
 import math
 import pygame
 from enum import Enum
+from pygame.sprite import Sprite
 
 
 class Direction(Enum):
@@ -11,8 +12,9 @@ class Direction(Enum):
     RIGHT = 4
 
 
-class Tank:
+class Tank(Sprite):
     def __init__(self, position, tank_image, cannon_image):
+        super().__init__()
         self._position = np.array(position)
         self._image = tank_image  # Internal image
         self.cannon = Cannon(cannon_image, self)
@@ -45,7 +47,7 @@ class Tank:
             print('reloading')
             return False
 
-    def tick(self, fps):
+    def update(self, fps):
         if self.forward == 0 or (self.forward < 0 < self.velocity) or (self.forward > 0 > self.velocity):
             if math.fabs(self.velocity) > 3:
                 self.velocity = self.velocity + (6 if self.velocity < 0 else -6)
@@ -60,14 +62,15 @@ class Tank:
         self.turn = 0
 
         self.image = pygame.transform.rotate(self._image, math.degrees(self.orientation))
-        self.cannon.tick(fps)
+        #self.cannon.update(fps)
 
         if self.reload > 0:
             self.reload -= fps/100
 
     @property
-    def image_position(self):
-        return self._position[0] - self.image.get_width()/2, self._position[1] - self.image.get_height()/2
+    def rect(self):
+        image_position = self._position[0] - self.image.get_width()/2, self._position[1] - self.image.get_height()/2
+        return pygame.Rect(image_position, self.image.get_size())
 
     @property
     def position(self):
@@ -78,8 +81,9 @@ class Tank:
         self._position = np.array(value)
 
 
-class Cannon:
+class Cannon(Sprite):
     def __init__(self, image, tank):
+        super().__init__()
         self._image = image
         self.tank = tank
         self.orientation = math.radians(90)
@@ -88,7 +92,7 @@ class Cannon:
         self.image = pygame.transform.rotate(self._image, math.degrees(self.orientation))
 
     @property
-    def image_position(self):
+    def rect(self):
         sin = math.sin(self.orientation)
         cos = math.cos(self.orientation)
         width_shift = cos < 0
@@ -98,9 +102,10 @@ class Cannon:
         #print(sin, cos, self.orientation, math.degrees(self.orientation))
         center = self.tank.position
         width, height = self.image.get_size()
-        return center[0] - width_shift*width + adjustment_direction*self.width/2 * sin,\
-               center[1] - height_shift*height + adjustment_direction*self.width/2 * -cos
+        image_position = (center[0] - width_shift*width + adjustment_direction*self.width/2 * sin,
+                          center[1] - height_shift*height + adjustment_direction*self.width/2 * -cos)
+        return pygame.Rect(image_position, (width, height))
 
-    def tick(self, fps):
+    def update(self, fps):
         self.image = pygame.transform.rotate(self._image, math.degrees(self.orientation))
 

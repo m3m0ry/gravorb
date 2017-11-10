@@ -7,17 +7,25 @@ from handler import MouseHandler, KeyHandler
 pygame.init()
 clock = pygame.time.Clock()
 display_width, display_height = (800, 640)
-screen = pygame.display.set_mode((display_width, display_height))
 pygame.display.set_caption('Tanks')
-fps = 60
+screen = pygame.display.set_mode((display_width, display_height))
 
 white = (255, 255, 255)
 black = (0, 0, 0)
+background = pygame.Surface(screen.get_size()).convert()  # TODO why do i need convert?
+background.fill(white)
+fps = 60
 
-players = [Tank((display_height / 2, display_width / 2), pygame.image.load('resources/tank2.png'),
+
+players = [Tank((display_height / 2, display_width / 2), pygame.image.load('resources/tank1.png'),
                 pygame.image.load('resources/cannon1.png'))]
 player = players[0]
-shots = []
+
+# TODO use better render group
+tanks = pygame.sprite.RenderPlain(players)
+cannons = pygame.sprite.RenderPlain([player.cannon for player in players])
+shots = pygame.sprite.RenderPlain()
+groups = [tanks, cannons, shots]
 handlers = [KeyHandler(player), MouseHandler(player, shots)]
 
 
@@ -31,15 +39,11 @@ while True:
         handler.handle()
 
     print(shots)
-    screen.fill(white)
-    for player in players:
-        player.tick(fps)
-        screen.blit(player.image, player.image_position)
-        screen.blit(player.cannon.image, player.cannon.image_position)
-    for shot in shots:
-        shot.tick(fps)
-        screen.blit(shot.image, shot.image_position)
 
+    screen.blit(background, (0, 0))
+    for group in groups:
+        group.update(fps)
+        group.draw(screen)
     pygame.display.update()
     clock.tick(fps)
 
