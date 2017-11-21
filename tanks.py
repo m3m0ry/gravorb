@@ -12,8 +12,7 @@ screen = pygame.display.set_mode((display_width, display_height))
 
 white = (255, 255, 255)
 black = (0, 0, 0)
-background = pygame.Surface(screen.get_size()).convert()  # TODO why do i need convert?
-background.fill(white)
+background = pygame.image.load('resources/world1.png')
 fps = 60
 
 
