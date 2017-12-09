@@ -30,8 +30,7 @@ active_groups = [tanks, cannons, shots]
 all_groups = active_groups + [walls]
 background = pygame.Surface(map_size)
 background.fill(white)
-for wall in walls:
-    background.blit(wall.image, wall.position)
+walls.draw(background)
 handlers = [KeyHandler(player), MouseHandler(player, shots)]
 
 
@@ -45,8 +44,11 @@ while True:
         handler.handle()
 
     screen.blit(background, (0, 0))
+
+    shots.update(fps, walls)
+    tanks.update(fps, tanks, shots, walls)
+    cannons.update(fps)
     for group in active_groups:
-        group.update(fps, walls)
         group.draw(screen)
     pygame.display.update()
     clock.tick(fps)

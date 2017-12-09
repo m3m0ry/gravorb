@@ -4,6 +4,8 @@ import pygame
 from enum import Enum
 from pygame.sprite import Sprite
 
+from map import collision
+
 
 class Direction(Enum):
     FORWARD = 1
@@ -25,6 +27,7 @@ class Tank(Sprite):
         self.image = pygame.transform.rotate(self._image, math.degrees(self.orientation))  # Image for representation
         self.mask = pygame.mask.from_surface(self.image)
         self.reload = 0
+        self.health = 100
 
     def movement(self, direction):
         if direction == Direction.FORWARD:
@@ -48,7 +51,7 @@ class Tank(Sprite):
             print('reloading')
             return False
 
-    def update(self, fps, walls):
+    def update(self, fps, tanks, shots, walls):
         old_position = self._position
         old_orientation = self.orientation
         if self.forward == 0 or (self.forward < 0 < self.velocity) or (self.forward > 0 > self.velocity):
@@ -67,11 +70,15 @@ class Tank(Sprite):
         self.image = pygame.transform.rotate(self._image, math.degrees(self.orientation))
         self.mask = pygame.mask.from_surface(self.image)
 
-        wall_collided = wall_collision(self, walls)
-        if wall_collided:
+        for _ in collision(self, walls):
             self._position = old_position
             self.orientation = old_orientation
             self.velocity = 0
+        for shot in collision(self, shots):
+            if shot.tank == self:
+                continue
+            self.health -= 25
+            shot.kill()
 
         self.image = pygame.transform.rotate(self._image, math.degrees(self.orientation))
 
@@ -115,13 +122,5 @@ class Cannon(Sprite):
                           center[1] - height_shift*height + adjustment_direction*self.width/2 * -cos)
         return pygame.Rect(image_position, (width, height))
 
-    def update(self, fps, walls):
+    def update(self, fps):
         self.image = pygame.transform.rotate(self._image, math.degrees(self.orientation))
-
-
-def wall_collision(sprite, walls):
-    potential_walls = pygame.sprite.spritecollide(sprite, walls, False)
-    for wall in potential_walls:
-        if pygame.sprite.collide_mask(wall, sprite):
-            return True
-    return False
