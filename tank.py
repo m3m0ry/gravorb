@@ -23,6 +23,7 @@ class Tank(Sprite):
         self.turn = 0
         self.orientation = math.radians(90)
         self.image = pygame.transform.rotate(self._image, math.degrees(self.orientation))  # Image for representation
+        self.mask = pygame.mask.from_surface(self.image)
         self.reload = 0
 
     def movement(self, direction):
@@ -36,8 +37,8 @@ class Tank(Sprite):
             self.turn = -1
 
     def aim(self, cursor_position):
-        winkel = -np.arctan2(cursor_position[1] - self.position[1], cursor_position[0] - self.position[0])
-        self.cannon.orientation = winkel
+        angle = -np.arctan2(cursor_position[1] - self.position[1], cursor_position[0] - self.position[0])
+        self.cannon.orientation = angle
 
     def fire(self):
         if self.reload <= 0:
@@ -47,7 +48,9 @@ class Tank(Sprite):
             print('reloading')
             return False
 
-    def update(self, fps):
+    def update(self, fps, walls):
+        old_position = self._position
+        old_orientation = self.orientation
         if self.forward == 0 or (self.forward < 0 < self.velocity) or (self.forward > 0 > self.velocity):
             if math.fabs(self.velocity) > 3:
                 self.velocity = self.velocity + (6 if self.velocity < 0 else -6)
@@ -62,15 +65,22 @@ class Tank(Sprite):
         self.turn = 0
 
         self.image = pygame.transform.rotate(self._image, math.degrees(self.orientation))
-        #self.cannon.update(fps)
+        self.mask = pygame.mask.from_surface(self.image)
+
+        wall_collided = wall_collision(self, walls)
+        if wall_collided:
+            self._position = old_position
+            self.orientation = old_orientation
+            self.velocity = 0
+
+        self.image = pygame.transform.rotate(self._image, math.degrees(self.orientation))
 
         if self.reload > 0:
             self.reload -= fps/100
 
     @property
     def rect(self):
-        image_position = self._position[0] - self.image.get_width()/2, self._position[1] - self.image.get_height()/2
-        return pygame.Rect(image_position, self.image.get_size())
+        return self.image.get_rect(center=self.position)
 
     @property
     def position(self):
@@ -99,13 +109,19 @@ class Cannon(Sprite):
         height_shift = sin > 0
         adjustment_direction = -1 if (width_shift ^ height_shift) else 1
 
-        #print(sin, cos, self.orientation, math.degrees(self.orientation))
         center = self.tank.position
         width, height = self.image.get_size()
         image_position = (center[0] - width_shift*width + adjustment_direction*self.width/2 * sin,
                           center[1] - height_shift*height + adjustment_direction*self.width/2 * -cos)
         return pygame.Rect(image_position, (width, height))
 
-    def update(self, fps):
+    def update(self, fps, walls):
         self.image = pygame.transform.rotate(self._image, math.degrees(self.orientation))
 
+
+def wall_collision(sprite, walls):
+    potential_walls = pygame.sprite.spritecollide(sprite, walls, False)
+    for wall in potential_walls:
+        if pygame.sprite.collide_mask(wall, sprite):
+            return True
+    return False

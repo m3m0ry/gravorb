@@ -1,20 +1,21 @@
 import pygame
 
 from tank import Tank
+from map import generate_map
 from handler import MouseHandler, KeyHandler
 
 
 pygame.init()
 clock = pygame.time.Clock()
-display_width, display_height = (800, 640)
+map_size = (800, 640)
+display_size = map_size  # TODO change in future
+display_width, display_height = display_size
 pygame.display.set_caption('Tanks')
-screen = pygame.display.set_mode((display_width, display_height))
+screen = pygame.display.set_mode(display_size)
 
 white = (255, 255, 255)
 black = (0, 0, 0)
-background = pygame.image.load('resources/world1.png')
 fps = 60
-
 
 players = [Tank((display_height / 2, display_width / 2), pygame.image.load('resources/tank1.png'),
                 pygame.image.load('resources/cannon1.png'))]
@@ -24,7 +25,13 @@ player = players[0]
 tanks = pygame.sprite.RenderPlain(players)
 cannons = pygame.sprite.RenderPlain([player.cannon for player in players])
 shots = pygame.sprite.RenderPlain()
-groups = [tanks, cannons, shots]
+walls = pygame.sprite.RenderPlain(generate_map())
+active_groups = [tanks, cannons, shots]
+all_groups = active_groups + [walls]
+background = pygame.Surface(map_size)
+background.fill(white)
+for wall in walls:
+    background.blit(wall.image, wall.position)
 handlers = [KeyHandler(player), MouseHandler(player, shots)]
 
 
@@ -37,11 +44,9 @@ while True:
     for handler in handlers:
         handler.handle()
 
-    print(shots)
-
     screen.blit(background, (0, 0))
-    for group in groups:
-        group.update(fps)
+    for group in active_groups:
+        group.update(fps, walls)
         group.draw(screen)
     pygame.display.update()
     clock.tick(fps)

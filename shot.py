@@ -5,14 +5,18 @@ from pygame.sprite import Sprite
 
 
 class Shot(Sprite):
-    def __init__(self, position, orientation):
+    def __init__(self, position, orientation, live=10):
         super().__init__()
         self.position = position
         self.orientation = orientation
         self.image = pygame.transform.rotate(pygame.image.load('resources/bullet1.png'), math.degrees(self.orientation))
         self.size = self.image.get_size()
+        self.live = live
 
-    def update(self, fps):
+    def update(self, fps, walls):
+        self.live -= 1/fps
+        if self.live < 0:
+            self.kill()
         velocity = 1000
         self.position = self.position - velocity * 1/fps * np.array([-math.cos(self.orientation), math.sin(self.orientation)])
 
