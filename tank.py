@@ -74,6 +74,7 @@ class Tank(Sprite):
             self._position = old_position
             self.orientation = old_orientation
             self.velocity = 0
+            break
         for shot in collision(self, shots):
             if shot.tank == self:
                 continue
