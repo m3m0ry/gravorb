@@ -1,8 +1,8 @@
 import pygame
 
-from tank import Tank
-from map import generate_map
-from handler import MouseHandler, KeyHandler
+from client.tank import Tank
+from client.map import generate_map
+from client.handler import MouseHandler, KeyHandler
 
 
 pygame.init()
@@ -17,7 +17,7 @@ white = (255, 255, 255)
 black = (0, 0, 0)
 fps = 60
 
-players = [Tank((display_height / 2, display_width / 2), pygame.image.load('resources/tank1.png'),
+players = [Tank((display_width / 2, display_height / 2), pygame.image.load('resources/tank1.png'),
                 pygame.image.load('resources/cannon1.png'))]
 player = players[0]
 

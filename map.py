@@ -17,8 +17,8 @@ def generate_map(size=(800, 640), walls=list(), filled = 0.1):
     walls.append(Wall((0, size[1]-10), (size[0], 10)))
     walls.append(Wall((0, 0), (10, size[1])))
     walls.append(Wall((size[0]-10, 0), (10, size[1])))
-    for _ in range(0, 100):
-        walls.append(Wall((random.randint(0, size[0]), random.randint(0, size[1]))))
+    for _ in range(0, 20):
+        walls.append(Wall((random.randint(0, size[0]), random.randint(0, size[1])), (random.randint(10, 56), random.randint(10, 60))))
 
     return walls
 

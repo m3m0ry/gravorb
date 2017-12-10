@@ -4,7 +4,7 @@ import pygame
 from enum import Enum
 from pygame.sprite import Sprite
 
-from map import collision
+from client.map import collision
 
 
 class Direction(Enum):
@@ -63,6 +63,14 @@ class Tank(Sprite):
         self.velocity = new_velocity if np.linalg.norm(new_velocity) <= 180 else self.velocity
         self._position = self._position - self.velocity * 1/fps * np.array([-math.cos(self.orientation), math.sin(self.orientation)])
 
+        self.image = pygame.transform.rotate(self._image, math.degrees(self.orientation))
+        self.mask = pygame.mask.from_surface(self.image)
+
+        for _ in collision(self, walls):
+            self._position = old_position
+            self.velocity = 0
+            break
+
         self.orientation += math.radians(self.turn*2)
         self.forward = 0
         self.turn = 0
@@ -71,9 +79,7 @@ class Tank(Sprite):
         self.mask = pygame.mask.from_surface(self.image)
 
         for _ in collision(self, walls):
-            self._position = old_position
             self.orientation = old_orientation
-            self.velocity = 0
             break
         for shot in collision(self, shots):
             if shot.tank == self:

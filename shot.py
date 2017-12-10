@@ -3,7 +3,7 @@ import math
 import numpy as np
 from pygame.sprite import Sprite
 
-from map import collision
+from client.map import collision
 
 
 class Shot(Sprite):
