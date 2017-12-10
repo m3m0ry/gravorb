@@ -1,5 +1,5 @@
-from client.tank import Direction
-from client.shot import Shot
+from tank import Direction
+from shot import Shot
 
 
 class Action:

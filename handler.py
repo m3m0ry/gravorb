@@ -1,6 +1,6 @@
 import pygame
 from pygame.locals import *
-from client.actions import Forward, Backward, Left, Right, Aim, Fire
+from actions import Forward, Backward, Left, Right, Aim, Fire
 
 
 class Handler:

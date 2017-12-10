@@ -1,8 +1,8 @@
 import pygame
 
-from client.tank import Tank
-from client.map import generate_map
-from client.handler import MouseHandler, KeyHandler
+from tank import Tank
+from map import generate_map
+from handler import MouseHandler, KeyHandler
 
 
 pygame.init()

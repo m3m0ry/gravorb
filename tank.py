@@ -4,7 +4,7 @@ import pygame
 from enum import Enum
 from pygame.sprite import Sprite
 
-from client.map import collision
+from map import collision
 
 
 class Direction(Enum):
