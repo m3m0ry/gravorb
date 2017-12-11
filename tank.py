@@ -60,7 +60,7 @@ class Tank(Sprite):
             else:
                 self.velocity = 0
         new_velocity = self.velocity + self.forward * 3
-        self.velocity = new_velocity if np.linalg.norm(new_velocity) <= 180 else self.velocity
+        self.velocity = new_velocity if abs(new_velocity) <= 180 else self.velocity
         self._position = self._position - self.velocity * 1/fps * np.array([-math.cos(self.orientation), math.sin(self.orientation)])
 
         self.image = pygame.transform.rotate(self._image, math.degrees(self.orientation))
@@ -68,7 +68,7 @@ class Tank(Sprite):
 
         for _ in collision(self, walls):
             self._position = old_position
-            self.velocity = 0
+            self.velocity *= -0.5
             break
 
         self.orientation += math.radians(self.turn*2)
