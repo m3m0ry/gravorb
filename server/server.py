@@ -3,7 +3,7 @@ import sys
 import re
 
 
-class ChatServer:
+class GameServer:
     def __init__(self, server_name, port, loop):
         self.server_name = server_name
         self.connections = {}
@@ -26,7 +26,7 @@ class ChatServer:
 
     async def prompt_username(self, reader, writer):
         try:
-            data = (await reader.readline()).decode("utf-8").strip() # TODO decode wiht try? NO all with try since re.match can fail
+            data = (await reader.readline()).decode("utf-8").strip()
             if not data:
                 return None
             username = re.match('new_player\s*(\w*)', data)[1]
@@ -54,7 +54,7 @@ class ChatServer:
 
 def main(argv):
     loop = asyncio.get_event_loop()
-    server = ChatServer("Test Server", 4455, loop)
+    server = GameServer("Test Server", 8888, loop)
     try:
         loop.run_forever()
     finally:
