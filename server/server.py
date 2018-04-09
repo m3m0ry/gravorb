@@ -1,65 +1,73 @@
 import asyncio
-import sys
-import re
+import json
 
-
-class GameServer:
-    def __init__(self, server_name, port, loop):
-        self.server_name = server_name
-        self.connections = {}
-        self.server = loop.run_until_complete(
-                asyncio.start_server(
-                    self.accept_connection, "", port, loop=loop))
-
-    async def accept_connection(self, reader, writer):
-        username = (await self.prompt_username(reader, writer))
-        if username is not None:
-            print("User %r has joined the room" % (username,))
-            await self.handle_connection(username, reader)
-            print("User %r has left the room" % (username,))
-        await writer.drain()
-        writer.close()
+class GameServer():
+    def __init__(self):
+        self.connections = []
 
     def broadcast(self, message):
-        for reader, writer in self.connections.values():
-            writer.write((message + "\n").encode("utf-8"))
+        for connection in self.connections:
+            connection.write(message.encode())
 
-    async def prompt_username(self, reader, writer):
-        try:
-            data = (await reader.readline()).decode("utf-8").strip()
-            if not data:
-                return None
-            username = re.match('new_player\s*(\w*)', data)[1]
-            print(username)
-            if username not in self.connections:
-                self.connections[username] = (reader, writer)
-                return username
-            else:
-                writer.write('error "Username already in use"\n'.encode('utf-8'))
-                return None
-        except (UnicodeDecodeError, TypeError) as e:
-            writer.write('error "No user name provided"\n'.encode("utf-8"))
+class ServerProtocol(asyncio.Protocol):
+    def __init__(self, server):
+        self.server = server
 
-    async def handle_connection(self, username, reader):
-        while True:
-            try:
-                data = (await reader.readline()).decode("utf-8")
-            except UnicodeDecodeError:
-                continue
-            if not data:
-                del self.connections[username]
-                return None
-            self.broadcast(username + ": " + data.strip())
+    def connection_made(self, transport):
+        peername = transport.get_extra_info('peername')
+        print('Connection from {}'.format(peername))
+        self.transport = transport
+        self.server.connections.append(transport)
 
+    def handle_login(self, message):
+        self.transport.write(json.dumps({'identifier': 'LOGIN_RESPONSE',
+            'message': 'Hello {!s}'.format(message['user'])}).encode())
 
-def main(argv):
-    loop = asyncio.get_event_loop()
-    server = GameServer("Test Server", 8888, loop)
-    try:
-        loop.run_forever()
-    finally:
-        loop.close()
+    def message(self, message):
+        self.server.broadcast(message['message'])
 
+    def logout(self):
+        self.transport.close()
 
-if __name__ == "__main__":
-    sys.exit(main(sys.argv))
+    def data_received(self, data):
+        if not data:
+            self.transport.write(json.dumps({'error': 'NO_DATA'}).encode())
+        message = json.loads(data.decode())
+        print(message)
+        identifier = message['identifier']
+        if identifier == "LOGIN_REQUEST":
+            self.handle_login(message)
+        elif identifier == 'MESSAGE':
+            self.message(message)
+        elif identifier == 'KEY_PRESSED':
+            self.transport.write(json.dumps({"test": payload}).encode())
+        elif identifier == 'QUIT':
+            self.logout(payload)
+        else:
+            self.transport.write('no such identifier\n'.encode())
+
+    def handle
+
+    def eof_received(self):
+        print('Got eof')
+
+    def connection_lost(self, exc):
+        print('Lost:', exc)
+
+loop = asyncio.get_event_loop()
+game_server = GameServer()
+# Each client connection will create a new protocol instance
+coro = loop.create_server(lambda: ServerProtocol(game_server), '127.0.0.1', 8888)
+server = loop.run_until_complete(coro)
+
+# Serve requests until Ctrl+C is pressed
+print('Serving on {}'.format(server.sockets[0].getsockname()))
+try:
+    loop.run_forever()
+except KeyboardInterrupt:
+    pass
+
+# Close the server
+server.close()
+loop.run_until_complete(server.wait_closed())
+loop.close()
